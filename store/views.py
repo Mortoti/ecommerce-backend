@@ -8,7 +8,7 @@ from .serializers import ProductSerializer, CollectionSerializer
 from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.mixins import ListModelMixin, CreateModelMixin
-from rest_framework.generics import  ListCreateAPIView
+from rest_framework.generics import  ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 
 
@@ -19,39 +19,24 @@ class ProductList(ListCreateAPIView):
     def get_serializer_context(self):
         return  {'request': self.request}
 
-class ProductDetail(APIView):
-
-    def get(self, request, pk):
+class ProductDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    def delete(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
-    def put(self, request, pk):
-        product = get_object_or_404(Product, pk=pk)
-        serializer = ProductSerializer(product, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-
-
-
-            
-
-
-
-
-
+        if product.orderitems.count() > 0:
+            return  Response ({'error': "The product you're trying to delete has associated orders"})
+        product.delete()
+        return Response (status=status.HTTP_204_NO_CONTENT)
 
 
 class CollectionList(ListCreateAPIView):
     queryset = Collection.objects.annotate(product_count=Count('products'))
     serializer_class = CollectionSerializer
 
+class CollectionDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Collection.objects.annotate(product_count = Count('products'))
+    serializer_class = CollectionSerializer
 
-@api_view()
-def collection_detail(request, pk):
-    collection = get_object_or_404(Collection.objects.annotate(product_count = Count('products')), pk=pk)
-    serializer = CollectionSerializer(collection)
 
-    return Response(serializer.data)
 
