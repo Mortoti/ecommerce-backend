@@ -11,6 +11,7 @@ from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.generics import  ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ProductFilter
 
 
 
@@ -19,7 +20,7 @@ class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['collection']
+    filterset_class = ProductFilter
 
     def get_serializer_context(self):
         return {'request': self.request}
