@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from decimal import Decimal
-from .models import Product, Collection
+from .models import Product, Collection, Review
 
 
 
@@ -20,3 +20,12 @@ class CollectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = ['id', 'title', 'product_count']
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'name', 'date', 'description', 'product']
+    def create(self, validated_data):
+        product_id = self.context['product_id']
+        return Review.objects.create(product_id= product_id, **validated_data)
+
+
